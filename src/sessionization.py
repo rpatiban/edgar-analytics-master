@@ -12,9 +12,9 @@ dict_ASStartTimes = dict()
 # Dictionary to keep last reuest time stamp for active sessions
 dict_ASLastReqeust = dict()
 
-# ============ Functions ==============================
+# ============ Subroutines ==============================
 
-# Function to populate all the dictionaries for an active session
+# Subroutine to populate all the dictionaries for an active session
 def populateDicts(ip, ts) :
     if ip in dict_ASCnt :		
         dict_ASCnt[ip] += 1
@@ -26,17 +26,17 @@ def populateDicts(ip, ts) :
         dict_ASStartTimes[ip] = ts
 
 
-# Function write output when a session ends for an ip address
+# Subroutine write output when a session ends for an ip address
 def writeOutput(ip) :
-    #output_file = sys.argv[3]
-    output_file = r"../output/sessionization.txt"
+    output_file = sys.argv[3]
+    #output_file = r"../output/sessionization_test1.txt"
     activeDur = int((dict_ASLastReqeust[ip] - dict_ASStartTimes[ip]).total_seconds()) + 1
 
     with open(output_file, 'a') as f:
         f.write('{},{},{},{},{}\n'.format(ip, dict_ASStartTimes[ip], dict_ASLastReqeust[ip], activeDur, dict_ASCnt[ip]))
 
 
-# Function to remove inactive session
+# Subroutine to remove inactive session
 def removeSession(ip) :
     dict_ASStartTimes.pop(ip, None)
     dict_ASCnt.pop(ip, None)
@@ -50,61 +50,61 @@ def main_func() :
     current_time = datetime.datetime.now()
     print(current_time)
 
-    #if (len(sys.argv) != 4) :
-    #    print('ERROR: not enough parameters')
-    #    exit()
-    #else :
-    #    # Assigning parameters to appropriate variables
-    #    # in case of parameters sequence change - please change it here
-    #    input_file = sys.argv[1]
-    #    inact_file = sys.argv[2]
+    if (len(sys.argv) != 4) :
+        print('ERROR: not enough parameters')
+        exit()
+    else :
+        # Assigning parameters to appropriate variables
+        # in case of parameters sequence change - please change it here
+        input_file = sys.argv[1]
+        inact_file = sys.argv[2]
 
-    try :
-        inact_file = r"../input/inactivity_period.txt"
-        input_file = r"../input/1min.csv"
+        try :
+            #inact_file = r"../input/inactivity_period.txt"
+            #input_file = r"../input/log_test1.csv"
 
-        # Reading inactive duration from the file
-        with open(inact_file, 'r') as inactF:
-            inact_period = int(inactF.read())
+            # Reading inactive duration from the file
+            with open(inact_file, 'r') as inactF:
+                inact_period = int(inactF.read())
 
-        with open(input_file, 'r') as csvfile:
-            reader =  csv.DictReader(csvfile)
-            for row in reader:
-                rowIP = row['ip']
+            with open(input_file, 'r') as csvfile:
+                reader =  csv.DictReader(csvfile)
+                for row in reader:
+                    rowIP = row['ip']
         
-                # Get Timestamp from the current line
-                str_LineTS = row['date'] + ":" + row['time']
-                lineTS = datetime.datetime.strptime(str_LineTS, '%Y-%m-%d:%H:%M:%S')
+                    # Get Timestamp from the current line
+                    str_LineTS = row['date'] + ":" + row['time']
+                    lineTS = datetime.datetime.strptime(str_LineTS, '%Y-%m-%d:%H:%M:%S')
 
-                # Looping for closable sessions
+                    # Looping for closable sessions
 
-                tplKeys = ();  # tuple for caching the keys of inactive sessions
-                for ipkey in dict_ASLastReqeust: 
-                    tsLastRequest = dict_ASLastReqeust[ipkey]
-                    sessionEndTS = tsLastRequest + datetime.timedelta(seconds=inact_period)
+                    tplKeys = ();  # tuple for caching the keys of inactive sessions
+                    for ipkey in dict_ASLastReqeust: 
+                        tsLastRequest = dict_ASLastReqeust[ipkey]
+                        sessionTolorateTS = tsLastRequest + datetime.timedelta(seconds=inact_period)
 
-                    # Check if session can be ended
-                    if (sessionEndTS < lineTS) :
-                        tplKeys = (*tplKeys, ipkey)
-                        writeOutput(ipkey)
-                        removeSession(ipkey)
+                        # Check if session can be ended
+                        if (sessionTolorateTS < lineTS) :
+                            tplKeys = (*tplKeys, ipkey)
+                            writeOutput(ipkey)
+                            removeSession(ipkey)
 
-                # Remove the keys of inactive sessions 
-                list(map(dict_ASLastReqeust.__delitem__, filter(dict_ASLastReqeust.__contains__,tplKeys)))
+                    # Remove the keys of inactive sessions 
+                    list(map(dict_ASLastReqeust.__delitem__, filter(dict_ASLastReqeust.__contains__,tplKeys)))
  
-                # Continue with adding active session
-                populateDicts(rowIP, lineTS)
+                    # Continue with adding active session
+                    populateDicts(rowIP, lineTS)
 
-        # EOF closing all active sessions
-        #print(len(dict_ASCnt), len(dict_ASStartTimes), len(dict_ASLastReqeust))
-        for ipkey in dict_ASLastReqeust : 
-            writeOutput(ipkey)
+            # EOF closing all active sessions
+            #print(len(dict_ASCnt), len(dict_ASStartTimes), len(dict_ASLastReqeust))
+            for ipkey in dict_ASLastReqeust : 
+                writeOutput(ipkey)
 
-    # Exception handling
-    except:
-        e=sys.exc_info()
-        print('ERROR: something went wrong ')
-        print(e)
+        # Exception handling
+        except:
+            e=sys.exc_info()
+            print('ERROR: something went wrong ')
+            print(e)
 
 
     #Getting Ending time
