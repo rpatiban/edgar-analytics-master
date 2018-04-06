@@ -19,7 +19,7 @@ Please see below for flow chart.
 
 Here are some execution stats.
 
-CPU usage - 30% (Consistent until end)
-Memory usage - 15MB (Consistent until end)
-For 1 min data - execution time is 25secs.
-For 1 hour data - execution time is 35 mins.
+* CPU usage - `30%` (Consistent until end)
+* Memory usage - `15MB` (Consistent until end)
+* For 1 min data - execution time is `25secs`.
+* For 1 hour data - execution time is `35 mins`.
